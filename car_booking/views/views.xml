@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<odoo>
+<data>
+<record id="dep_name" model="ir.ui.view">
+    <field name="name">car_booking.dep_name</field>
+    <field name="model">hr.department</field>
+    <field name="inherit_id" ref="hr.view_department_form"/>
+    <field name="arch" type="xml">
+        <data>
+            <xpath expr="//group[@col='4']/field[@name='name']" position="attributes">
+                <attribute name="string">Branch name</attribute>
+            </xpath>
+            <xpath expr="//group[@col='4']/field[@name='manager_id']" position="attributes">
+                <attribute name="string">Branch Officer</attribute>
+            </xpath>
+            <xpath expr="//group[@col='4']/field[@name='parent_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//group[@col='4']" position="inside">
+                <field name="name"/>
+                <field name="name"/>
+                <field name="name"/>
+            </xpath>
+        </data>
+    </field>
+</record>
+</data>
+</odoo>
