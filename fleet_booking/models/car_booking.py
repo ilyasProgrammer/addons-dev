@@ -5,7 +5,7 @@ from openerp import api, fields, models
 
 class HrDepartment(models.Model):
 
-    _name = "car_booking.hr.department"
+    _name = "fleet_booking.department"
     _inherit = 'hr.department'
 
     city = fields.Char(string='City')
