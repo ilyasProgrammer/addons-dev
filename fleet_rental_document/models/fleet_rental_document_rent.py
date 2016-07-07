@@ -34,7 +34,7 @@ class FleetRentalDocumentRent(models.Model):
     account_move_ids = fields.One2many('account.move', 'fleet_rental_document_id', string='Entries', readonly=True)
     account_move_lines_ids = fields.One2many('account.move.line', 'fleet_rental_document_id', string='Entrie lines', readonly=True)
     document_extend_ids = fields.One2many('fleet_rental.document_extend', 'document_rent_id')
-    balance = fields.Float(string='Balance', compute="_compute_balance", store=True, digits_compute=dp.get_precision('Product Price'), readonly=True)
+    balance = fields.Float(string='Balance', compute="_compute_balance", store=True, digits_compute=dp.get_precision('Product Price'), readonly=True, help='Customer duty')
     advanced_deposit = fields.Float(string='Advanced Deposit', compute="_compute_deposit", store=True, digits_compute=dp.get_precision('Product Price'), readonly=True)
     diff_datetime = fields.Datetime(string='Previous rent document return date and time')
     invoice_ids = fields.Many2many("account.invoice", string='Invoices', compute="_get_invoiced", readonly=True, copy=False)
@@ -55,11 +55,11 @@ class FleetRentalDocumentRent(models.Model):
                 return
             bank_journal = self.env['account.journal'].search([('type', '=', 'bank')], limit=1)
             cash_journal = self.env['account.journal'].search([('type', '=', 'cash')], limit=1)
-            bank_account = bank_journal.default_debit_account_id
-            cash_account = cash_journal.default_debit_account_id
-            customer_deposit_account = self.env['account.account'].search([('code', '=', '246000')], limit=1)
+            bank_account = bank_journal.default_debit_account_id  # 66
+            cash_account = cash_journal.default_debit_account_id  # 65
+            customer_deposit_account = self.env['account.account'].search([('code', '=', '246000')], limit=1)  # 64
             # TODO ПРОТЕСТИТЬ БАЛАНС. ИЗМЕНИТЬ ЭТОТ КОД В ДРУГИХ МЕСТАХ.
-            account_receivable = record.partner_id.property_account_receivable_id
+            account_receivable = record.partner_id.property_account_receivable_id  # 2
             """ Его долг это все дебеты account_receivable
                 Его оплата это все дебеты по кассе и банку
                 Наш долг (refund invoice) это кредиты  Customer Deposits Received
@@ -78,12 +78,12 @@ class FleetRentalDocumentRent(models.Model):
             for r in customer_duty_recs:
                 customer_total_duty += r.debit
             for r in company_duty_recs:
-                company_total_duty += r.credit
+                company_total_duty += r.debit
             for r in payment_recs:
                 customer_total_paid += r.debit
                 company_total_paid += r.credit
 
-            record.balance = 0
+            record.balance = customer_total_duty - customer_total_paid - company_total_duty + company_total_paid
             # If “Balance” is negative (means we have to return amount to customer)
             # If “Balance” is positive (means customer has to pay)
 
@@ -96,16 +96,46 @@ class FleetRentalDocumentRent(models.Model):
                 id_to_manage = record.id
             elif self._model._name == 'fleet_rental.document_extend':
                 id_to_manage = record.document_rent_id.id
-            account_receivable = record.partner_id.property_account_receivable_id.id
+            else:
+                return
+            bank_journal = self.env['account.journal'].search([('type', '=', 'bank')], limit=1)
+            cash_journal = self.env['account.journal'].search([('type', '=', 'cash')], limit=1)
+            bank_account = bank_journal.default_debit_account_id  # 66
+            cash_account = cash_journal.default_debit_account_id  # 65
+            customer_deposit_account = self.env['account.account'].search([('code', '=', '246000')],
+                                                                          limit=1)  # 64
+            # TODO ПРОТЕСТИТЬ БАЛАНС. ИЗМЕНИТЬ ЭТОТ КОД В ДРУГИХ МЕСТАХ.
+            account_receivable = record.partner_id.property_account_receivable_id  # 2
+            """ Его долг это все дебеты account_receivable
+                Его оплата это все дебеты по кассе и банку
+                Наш долг (refund invoice) это кредиты  Customer Deposits Received
+                Наша оплата (refund payment) это кредиты по кассе и банку
+            """
             if record.account_move_lines_ids:
                 record.account_move_lines_ids[0].move_id.fleet_rental_document_id = [(4, id_to_manage)]
-            mutuals_recs = self.env['account.move.line'].search([('fleet_rental_document_id', '=', id_to_manage), ('account_id', '=', account_receivable)])
-            total_duty = 0
-            total_paid = 0
-            for r in mutuals_recs:
-                total_duty += r.debit
-                total_paid += r.credit
-            record.advanced_deposit = total_paid
+            customer_duty_recs = self.env['account.move.line'].search(
+                [('fleet_rental_document_id', '=', id_to_manage),
+                 ('account_id', '=', account_receivable.id)])
+            payment_recs = self.env['account.move.line'].search(
+                [('fleet_rental_document_id', '=', id_to_manage),
+                 ('account_id', 'in', [bank_account.id, cash_account.id])])
+            company_duty_recs = self.env['account.move.line'].search(
+                [('fleet_rental_document_id', '=', id_to_manage),
+                 ('account_id', '=', customer_deposit_account.id)])
+
+            customer_total_duty = 0
+            customer_total_paid = 0
+            company_total_duty = 0
+            company_total_paid = 0
+            for r in customer_duty_recs:
+                customer_total_duty += r.debit
+            for r in company_duty_recs:
+                company_total_duty += r.debit
+            for r in payment_recs:
+                customer_total_paid += r.debit
+                company_total_paid += r.credit
+
+            record.advanced_deposit = customer_total_paid
 
     @api.onchange('vehicle_id')
     def onchange_vehicle_id(self):
