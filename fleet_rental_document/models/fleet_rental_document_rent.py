@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
-import openerp
+
 from openerp import models, fields, api
 from datetime import datetime, date, timedelta
 from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT as DTF
 import openerp.addons.decimal_precision as dp
+import base64
+from lxml import etree
+import os
+from wand.image import Image
 
 
 class FleetRentalDocumentRent(models.Model):
@@ -41,6 +45,7 @@ class FleetRentalDocumentRent(models.Model):
     invoice_count = fields.Integer(string='# of Invoices', compute='_get_invoiced', readonly=True)
     invoice_line_ids = fields.One2many('account.invoice.line', 'fleet_rental_document_id', string='Invoice Lines', copy=False)
     odometer_before = fields.Float(string='Odometer', compute='_compute_odometer', store=True, readonly=True)
+
 
     @api.depends('total_rent_price', 'account_move_lines_ids', 'document_extend_ids')
     def _compute_balance(self):

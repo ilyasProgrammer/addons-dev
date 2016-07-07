@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 import openerp
 from openerp import models, fields, api
 from datetime import datetime, date, timedelta
@@ -59,6 +60,21 @@ class FleetRentalDocument(models.Model):
 
     png_file = fields.Text('PNG', compute='_compute_png', store=False)
 
+    @api.multi
+    def _compute_png(self):
+        for rec in self:
+            f = open('/'.join([os.path.dirname(os.path.realpath(__file__)),
+                               '../static/src/img/car-cutout.svg']), 'r')
+            svg_file = f.read()
+            dom = etree.fromstring(svg_file)
+            for line in rec.part_line_ids:
+                if line.state == 'broken':
+                    for el in dom.xpath('//*[@id="%s"]' % line.part_id.path_ID):
+                        el.attrib['fill'] = 'red'
+            f.close()
+            with Image(blob=etree.tostring(dom), format='svg') as img:
+                rec.png_file = base64.b64encode(img.make_blob('png'))
+
     @api.depends('total_rent_price', 'account_move_lines_ids')
     def _compute_balance(self):
         return
@@ -88,21 +104,6 @@ class FleetRentalDocument(models.Model):
         self.allowed_kilometer_per_day = self.vehicle_id.allowed_kilometer_per_day
         self.rate_per_extra_km = self.vehicle_id.rate_per_extra_km
         self.daily_rental_price = self.vehicle_id.daily_rental_price
-
-    @api.multi
-    def _compute_png(self):
-        for rec in self:
-            f = open('/'.join([os.path.dirname(os.path.realpath(__file__)),
-                               '../static/src/img/car-cutout.svg']), 'r')
-            svg_file = f.read()
-            dom = etree.fromstring(svg_file)
-            for line in rec.part_line_ids:
-                if line.state == 'broken':
-                    for el in dom.xpath('//*[@id="%s"]' % line.part_id.path_ID):
-                        el.attrib['fill'] = 'red'
-            f.close()
-            with Image(blob=etree.tostring(dom), format='svg') as img:
-                rec.png_file = base64.b64encode(img.make_blob('png'))
 
     @api.multi
     def action_view_invoice(self):
