@@ -59,7 +59,7 @@ class FleetRentalDocumentRent(models.Model):
             cash_account = cash_journal.default_debit_account_id
             customer_deposit_account = self.env['account.account'].search([('code', '=', '246000')], limit=1)
             # TODO ПРОТЕСТИТЬ БАЛАНС. ИЗМЕНИТЬ ЭТОТ КОД В ДРУГИХ МЕСТАХ.
-            account_receivable = record.partner_id.property_account_receivable_id.id
+            account_receivable = record.partner_id.property_account_receivable_id
             """ Его долг это все дебеты account_receivable
                 Его оплата это все дебеты по кассе и банку
                 Наш долг (refund invoice) это кредиты  Customer Deposits Received
@@ -67,9 +67,9 @@ class FleetRentalDocumentRent(models.Model):
             """
             if record.account_move_lines_ids:
                 record.account_move_lines_ids[0].move_id.fleet_rental_document_id = [(4, id_to_manage)]
-            customer_duty_recs = self.env['account.move.line'].search([('fleet_rental_document_id', '=', id_to_manage), ('account_id', '=', account_receivable)])
-            payment_recs = self.env['account.move.line'].search([('fleet_rental_document_id', '=', id_to_manage), ('account_id', 'in', [bank_account, cash_account])])
-            company_duty_recs = self.env['account.move.line'].search([('fleet_rental_document_id', '=', id_to_manage), ('account_id', '=', customer_deposit_account)])
+            customer_duty_recs = self.env['account.move.line'].search([('fleet_rental_document_id', '=', id_to_manage), ('account_id', '=', account_receivable.id)])
+            payment_recs = self.env['account.move.line'].search([('fleet_rental_document_id', '=', id_to_manage), ('account_id', 'in', [bank_account.id, cash_account.id])])
+            company_duty_recs = self.env['account.move.line'].search([('fleet_rental_document_id', '=', id_to_manage), ('account_id', '=', customer_deposit_account.id)])
 
             customer_total_duty = 0
             customer_total_paid = 0

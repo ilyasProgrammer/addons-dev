@@ -44,8 +44,10 @@ class AccountInvoice(models.Model):
     @api.model
     def create(self, vals):
         invoice = super(AccountInvoice, self).create(vals)
-        if vals['invoice_line_ids'][0][2]['fleet_rental_document_id']:
-            invoice.fleet_rental_document_id = vals['invoice_line_ids'][0][2]['fleet_rental_document_id']  # This needs for refunds.
+        if len(vals['invoice_line_ids']) == 1:
+            if len(vals['invoice_line_ids'][0]) == 3:
+                if vals['invoice_line_ids'][0][2].get('fleet_rental_document_id', False):
+                    invoice.fleet_rental_document_id = vals['invoice_line_ids'][0][2]['fleet_rental_document_id']  # This needs for refunds.
         return invoice
 
 
