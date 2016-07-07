@@ -37,8 +37,11 @@ class AccountInvoice(models.Model):
 
     @api.multi
     def register_payment(self, payment_line, writeoff_acc_id=False, writeoff_journal_id=False):
-        payment_line.fleet_rental_document_id = self.fleet_rental_document_id
-        self.partner_id.points += self.amount_untaxed
+        try:
+            payment_line.fleet_rental_document_id = self.fleet_rental_document_id
+            self.partner_id.points += self.amount_untaxed
+        except:
+            pass
         res = super(AccountInvoice, self).register_payment(payment_line, writeoff_acc_id, writeoff_journal_id)
 
     @api.model
