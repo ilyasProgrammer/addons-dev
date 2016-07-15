@@ -79,32 +79,29 @@ Depreciation and enrollment
 
 For depreciation purposes used build-in module ``Assets management``.
 
+All actions, regarding assets and depreciation, supposed in duty of *accountant* user.
+
 Firstly you need to enroll asset (vehicle):
 
 * Go to ``Accounting / Purchases / Vendor bills``.
 * Create new ``Vendor bill``.
 * Select vendor (partner).
-* Add product representing vehicle. Create it if  needed.
+* Add product representing vehicle. Create it if needed.
 * Select ``Asset Category``. Edit it or create new category if needed.
     * Pay special attention to ``Journal Entries``. Make sure correct journal and accounts selected.
     * Configure ``Depreciation Method`` and ``Periodicity``.
 * Fill other fields.
 * Then press ``[Validate]`` and ``[Register payment]``.
-* This document makes asset enrollment and money write-off accounting entries.
+* This document creates asset record and makes asset enrollment and money write-off accounting entries (on payment register).
 * Save and close document.
 
-Secondly create asset model record:
+Secondly manage created asset:
 
 * Go to ``Accounting / Adviser / Assets``.
-* Create new asset.
-    * Select ``Category``. Depreciation information will be auto-filled.
+* Here you will see automatically created asset for product (vehicle) you just enrolled. Open it.
     * Select vehicle. Create it if needed. Just fill necessary fields.
-    * Select invoice. Put here vendor bill you created earlier.
-    * Enter ``Gross Value``. It is an amount to be depreciated.
-    * Fill other fields.
     * Press ``[Confirm]`` and ``[Save]``.
-    * Now you will see depreciation lines.
-    * Press red circle on line you need to create accounting depreciation entries and press ``[Save]`` (it will become green).
+    * Press red circle on depreciation line you need (in ``Residual`` column) to create accounting depreciation entries and press ``[Save]`` (it will become green).
     * In upper right corner ``Items`` count will increase. Press it to look up accounting entries.
     * Press ``[Modify Depreciation]`` to make some changes those like period extension or to select another strategy.
 
