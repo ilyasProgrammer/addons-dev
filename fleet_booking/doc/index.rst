@@ -107,13 +107,6 @@ Secondly manage created asset:
 
 So vehicle is represented by three records: Product, Vehicle, Asset. Product and asset is needed only for accounting aims. Vehicle is main object you going to work with.
 
-Register payments
------------------
-
-* Open vehicle.
-* Go to ``Payments`` tab.
-* Press ``[Add new item]``.
-* Fill invoice with according data.
 
 Remove Vehicle
 --------------
