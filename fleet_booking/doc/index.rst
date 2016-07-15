@@ -35,6 +35,7 @@ Branches
 * Login in system as General Manager (gm/gm) or Admin (admin/admin). *login/password*
 * Go to fleet in main menu and next ``Configuration / Branches``. Create and edit branches here.
 * Go to ``Settings / Users / Users``. Set corresponding branch to every user you need. It will cause branch limitations for some data in system for that user.
+* Also you may set according branch for vehicles.
 
 Customer features
 -----------------
